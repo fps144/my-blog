@@ -2,17 +2,17 @@
 const siteMetadata = {
   title: 'Sorain\'s Blog',
   author: 'Sorain',
-  headerTitle: 'TailwindBlog',
+  headerTitle: 'Sorain\'s Blog',
   description: 'A blog created with Next.js and Tailwind.css',
-  language: 'zh-cn',
+  language: 'zh-CN',
   theme: 'system', // system, dark or light
   siteUrl: 'https://tailwind-nextjs-starter-blog.vercel.app',
   siteRepo: 'https://github.com/timlrx/tailwind-nextjs-starter-blog',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/images/twitter-card.png`,
   mastodon: 'https://mastodon.social/@mastodonuser',
-  email: 'address@yoursite.com',
-  github: 'https://github.com',
+  email: 'yusong1108@gmail.com',
+  github: 'https://github.com/fps144',
   x: 'https://twitter.com/x',
   // twitter: 'https://twitter.com/Twitter',
   facebook: 'https://facebook.com',
@@ -79,7 +79,7 @@ const siteMetadata = {
       // example: https://giscus.app/themes/custom_example.css
       themeURL: '',
       // This corresponds to the `data-lang="en"` in giscus's configurations
-      lang: 'zh-CN',
+      lang: 'en',
     },
   },
   search: {
