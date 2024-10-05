@@ -1,0 +1,49 @@
+---
+title: '快速排序 Quick Sort'
+date: '2024-10-5'
+tags: ['algorithm']
+draft: true
+summary: '详细介绍快速排序的原理、实现、时空复杂度、优化方法及使用场景。'
+---
+
+- [原理](#原理)  
+- [实现](#实现)  
+- [时空复杂度](#时空复杂度)  
+- [优化](#优化)  
+- [使用场景](#使用场景)  
+
+## 原理
+
+## 实现  
+
+```js:quicksort.js
+function quickSort(nums) {
+    if (nums.length <= 1) {
+        return nums;
+    }
+
+    const pivot = nums[nums.length - 1];
+    let [smaller, equal, larger] = [[], [], []];
+
+    for (let num of nums) {
+        if (num < pivot) {
+            smaller.push(num);
+        } else if (num === pivot) {
+            equal.push(num);
+        } else {
+            larger.push(num);
+        }
+    }
+
+    return [...quickSort(smaller), ...equal, ...quickSort(larger)];
+}
+
+const arr = [2, 9, 2, 1, 10, 0, 5, 7, 6, 3];
+console.log(quickSort(arr)); // [0, 1, 2, 2, 3, 5, 6, 7, 9, 10]
+```
+
+## 时空复杂度
+
+## 优化
+
+## 使用场景
