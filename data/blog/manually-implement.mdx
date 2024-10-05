@@ -6,17 +6,19 @@ draft: false
 summary: '使用 Javascript 手动实现一些常见的函数，如 Promise 相关、防抖、节流、深拷贝等。'
 ---
 
-# Guide  
+## Guide  
 
 - [new](#new)  
-- [柯里化-curry](#柯里化-curry)  
-- [深拷贝-deepclone](#深拷贝-deepclone)  
-- [数组铺平-flat](#数组铺平-flat)  
-- [调度器-Scheduler](#调度器-scheduler)  
-- [防抖-debounce](#防抖-debounce)  
-- [节流-throttle](#节流-throttle)  
+- [柯里化 curry](#柯里化-curry)  
+- [深拷贝 deepClone](#深拷贝-deepclone)  
+- [数组铺平 flat](#数组铺平-flat)  
+- [调度器 Scheduler](#调度器-scheduler)  
+- [防抖 debounce](#防抖-debounce)  
+- [节流 throttle](#节流-throttle)  
 
-# new
+---  
+
+## new
 
 ```js:new.js
 function myNew(constructor, ...args) {
@@ -37,7 +39,9 @@ const person = myNew(Person, 'Sorain', 'male');
 console.log(person);
 ```
 
-# 柯里化-curry  
+---  
+
+## 柯里化 curry  
 
 ```js:curry.js
 function curry(fn) {
@@ -62,7 +66,9 @@ console.log(curriedAdd(1, 2, 3));
 console.log(curriedAdd(1)(2)(3));
 ```
 
-# 深拷贝-deepclone  
+---  
+
+## 深拷贝 deepClone  
 
 ```js:deepclone.js
 function deepClone(value) {
@@ -102,7 +108,9 @@ console.log(clonedObj.arr[3] === obj);
 console.log(clonedObj.arr[3] === clonedObj);
 ```
 
-# 数组铺平-flat  
+---  
+
+## 数组铺平 flat  
 
 ```js:flat.js
 function myFlat(arr, depth = 1) {
@@ -117,7 +125,9 @@ const flattenArr = myFlat(mockArr, 0)
 console.log(flattenArr,'\n', mockArr, '\n', flattenArr === mockArr);
 ```
 
-# 调度器-Scheduler  
+---  
+
+## 调度器 Scheduler  
 
 ```js:scheduler.js
 class Scheduler {
@@ -164,7 +174,9 @@ addTask(1000, 'task3');
 addTask(1000, 'task4');
 ```
 
-# 防抖-debounce  
+---  
+
+## 防抖 debounce  
 
 ```js:debounce.js
 function debounce(func, delay) {
@@ -182,8 +194,9 @@ const handleResize = debounce(() => {
 window.addEventListener('resize', handleResize);
 ```
 
+---  
 
-# 节流-throttle
+## 节流 throttle
 ```js:throttle.js
 function throttle1(fn, delay) {
     let timer = null;
