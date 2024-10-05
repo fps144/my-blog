@@ -1,0 +1,228 @@
+---
+title: '手撕函数实现'
+date: '2024-9-30'
+tags: ['面试']
+draft: false
+summary: '使用 Javascript 手动实现一些常见的函数，如 Promise 相关、防抖、节流、深拷贝等。'
+---
+
+# Guide  
+
+- [new](#new)  
+- [柯里化-curry](#柯里化-curry)  
+- [深拷贝-deepclone](#深拷贝-deepclone)  
+- [数组铺平-flat](#数组铺平-flat)  
+- [调度器-Scheduler](#调度器-scheduler)  
+- [防抖-debounce](#防抖-debounce)  
+- [节流-throttle](#节流-throttle)  
+
+# new
+
+```js:new.js
+function myNew(constructor, ...args) {
+    // 1. 使用 Object.create 创建一个以 constructor.prototype 为原型的新对象  
+    const obj = Object.create(constructor.prototype);  
+    // 2. 将构造函数内部的 this 绑定到新对象，并执行构造函数  
+    const result = constructor.apply(obj, args);  
+    // 3. 如果构造函数返回一个对象，则返回该对象，否则返回新对象  
+    return result instanceof Object ? result : obj; 
+}
+
+function Person(name, gender) {
+    this.name = name;
+    this.gender = gender;
+}
+
+const person = myNew(Person, 'Sorain', 'male');
+console.log(person);
+```
+
+# 柯里化-curry  
+
+```js:curry.js
+function curry(fn) {
+    return function curried(...args) {
+        if (args.length >= fn.length) {
+            return fn.apply(this, args);
+        } else {
+            return function(...subArgs) {
+                return curried.apply(this, args.concat(subArgs));
+            }
+        }
+    }
+}
+
+function add(a, b, c) {
+    return a + b + c;
+}
+
+const curriedAdd = curry(add);
+console.log(curriedAdd(1, 2)(3, 4));
+console.log(curriedAdd(1, 2, 3));
+console.log(curriedAdd(1)(2)(3));
+```
+
+# 深拷贝-deepclone  
+
+```js:deepclone.js
+function deepClone(value) {
+    const hash = new WeakMap();
+    
+    function cloneHandler(value) {
+        if (value === null || typeof value !== 'object') return value;
+        if (hash.has(value)) return hash.get(value);
+        
+        const result = Array.isArray(value) ? [] : {};
+        hash.set(value, result);
+        for (let key in value) {
+            if (value.hasOwnProperty(key)) {
+                result[key] = cloneHandler(value[key]);
+            }
+        }
+
+        return result;
+    }
+
+    return cloneHandler(value);
+}
+
+const obj = {
+    arr: [1, 2, 3],
+    a: 4
+};
+obj.sub = obj;
+obj.arr.push(obj);
+
+const clonedObj = deepClone(obj);
+
+console.log(clonedObj);
+console.log(clonedObj.arr === obj.arr);
+console.log(clonedObj.sub === obj.sub);
+console.log(clonedObj.arr[3] === obj);
+console.log(clonedObj.arr[3] === clonedObj);
+```
+
+# 数组铺平-flat  
+
+```js:flat.js
+function myFlat(arr, depth = 1) {
+    if (depth === 0) return [...arr];
+    return arr.reduce((prev, cur) => {
+        return prev.concat(Array.isArray(cur) ? flat(cur, depth - 1) : cur);
+    }, []);
+}
+
+const mockArr = [1, 2, [3, 4, [5, 6, [7, 8, [9, 10]]]]];
+const flattenArr = myFlat(mockArr, 0)
+console.log(flattenArr,'\n', mockArr, '\n', flattenArr === mockArr);
+```
+
+# 调度器-Scheduler  
+
+```js:scheduler.js
+class Scheduler {
+    constructor(maxConcurrent) {
+        this.maxConcurrent = maxConcurrent;
+        this.runningCount = 0;
+        this.queue = [];
+    }
+
+    addTask(task) {
+        return new Promise((resolve, reject) => {
+            this.queue.push({ task, resolve, reject });
+            this.#runTask();
+        })
+    }
+
+    #runTask() {
+        if (this.runningCount < this.maxConcurrent && this.queue.length) {
+            const { task, resolve, reject } = this.queue.shift();
+            this.runningCount++;
+            task().then(resolve).catch(reject).finally(() => {
+                this.runningCount--;
+                this.#runTask();
+            });
+        }
+    }
+}
+
+
+function timer(ms)  {
+    return new Promise((resolve) => setTimeout(() => {
+        resolve();
+    }, ms))
+}
+
+const scheduler = new Scheduler(3);
+function addTask(ms, name) {
+    scheduler.addTask(() => timer(ms).then(() => console.log(name)));
+}
+
+addTask(1000, 'task1');
+addTask(1000, 'task2');
+addTask(1000, 'task3');
+addTask(1000, 'task4');
+```
+
+# 防抖-debounce  
+
+```js:debounce.js
+function debounce(func, delay) {
+    let timer = null;
+    return function(...args) {
+        const context = this;
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(context, args), delay);
+    }
+}
+
+const handleResize = debounce(() => {
+    console.log('resize');
+}, 500);
+window.addEventListener('resize', handleResize);
+```
+
+
+# 节流-throttle
+```js:throttle.js
+function throttle1(fn, delay) {
+    let timer = null;
+    let lastTime = 0;
+    
+    return function(...args) {
+        const context = this;
+        if (!lastTime) {
+            fn.apply(context, args);
+            lastTime = new Date();
+        } else {
+            clearTimeout(timer);
+            const now = new Date();
+            timer = setTimeout(() => {
+                if (now - lastTime > delay) {
+                    fn.apply(context, args);
+                    lastTime = now;
+                }
+            }, delay - (now - lastTime));
+        }
+    }
+}
+
+function throttle2(fn, delay) {
+    let lastTime = 0;
+    return function(...args) {
+        let context = this;
+        let now = new Date();
+        if (now - lastTime > delay) {
+            fn.apply(context, args);
+            lastTime = now;
+        }
+    }
+}
+
+let n = 100;
+const throttledLog1 = throttle1((x) => { console.log("throttle1:", x) }, 50);
+const throttledLog2 = throttle2((x) => { console.log("throttle2:", x) }, 100);
+while (n--) {
+    throttledLog1(n);
+}
+```
