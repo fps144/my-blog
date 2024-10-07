@@ -9,6 +9,9 @@ summary: '使用 Javascript 手动实现一些常见的函数，如 Promise 相�
 ## Guide  
 
 - [new](#new)  
+- [Promise 相关](#promise-相关)
+    - [all](#all)
+- [bind](#bind)    
 - [柯里化 curry](#柯里化-curry)  
 - [深拷贝 deepClone](#深拷贝-deepclone)  
 - [数组铺平 flat](#数组铺平-flat)  
@@ -40,6 +43,66 @@ console.log(person);
 ```
 
 ---  
+
+## Promise 相关  
+
+### all  
+
+```js:promise-all.js
+Promise.myAll = function (params) {
+    return new Promise((resolve, reject) => {
+        const res = [];
+        for (let index = 0; index < params.length; index++) {
+            Promise.resolve(params[index]).then(_res => {
+                res[index] = _res;
+                // 不能用res.push(_res);是因为不知道params里的promise哪一个先完成，而all是要求按顺序返回
+                if (res.length === params.length) resolve(res);
+            }, reject);
+        }
+        if (!params?.length) resolve(res);
+    });
+}
+
+Promise.myAll([Promise.resolve(0), 1, 2, 3, Promise.resolve(4), Promise.resolve(5), Promise.resolve(6), 7]).then((res) => {
+    console.log("resolve:", res);
+}, (err) => {
+    console.log("reject:", err);
+}).catch((err) => {
+    console.log("catch:", err);
+});
+```
+
+---  
+
+## bind  
+
+```js:bind.js
+Function.prototype.myBind = function (ctx, ...args) {
+    const fn = this;
+    return function (...subArgs) {
+        const _args = [...args, ...subArgs];
+        if (new.target) {
+            return new fn(..._args);
+        } else {
+            return fn.apply(ctx, _args);
+        }
+    };
+};
+
+function fn(a, b, c) {
+    console.log('fn called.');
+    console.log('args', a, b, c);
+    console.log('this', this);
+    return "fn return";
+}
+
+const newFn = fn.myBind('mockThis', 1, 2);
+console.log(newFn(3));
+console.log('----------');
+console.log(new newFn(5));
+```
+
+---
 
 ## 柯里化 curry  
 
