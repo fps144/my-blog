@@ -1,0 +1,536 @@
+---
+title: '有限状态机（finite-state machine, FSM）在前端领域中的应用'
+date: '2024-10-22'
+tags: ['web development']
+draft: false
+summary: '概述状态机、有限状态机和状态模式的概念，举例说明其在前端领域中的应用，包括登录流程状态机、多标签页组件状态模式及购物车结算流程状态机实现。'
+---
+
+## Guide  
+
+- [概念](#概念)  
+    - [状态机 State Machine](#状态机-state-machine)  
+    - [有限状态机 Finite State Machine](#有限状态机-finite-state-machine)  
+    - [状态模式 State Pattern](#状态模式-state-pattern)  
+    - [从前端角度理解](#从前端角度理解)
+- [应用与实现](#应用与实现)  
+    - [登录流程的状态机实现](#登录流程的状态机实现)  
+    - [多标签页组件的状态模式实现](#多标签页组件的状态模式实现)  
+    - [购物车结算流程的状态机实现](#购物车结算流程的状态机实现)
+---  
+
+## 概念  
+
+### 状态机 State Machine  
+
+状态机是一种抽象的数学模型，用于描述一个系统在任意时刻所处的状态，以及在特定条件下状态如何转换。状态机由一组状态、事件，以及状态转移规则组成。它可以帮助我们清晰地理解和管理系统中的各种状态及其转移逻辑。  
+
+#### 特点  
+
+- 状态（State）：对象在其生命周期内所经历的不同状态。  
+- 事件（Event）：触发状态转换的触发器。  
+- 转移（Transition）：从一个状态到另一个状态的转换。 
+
+#### 应用场景  
+
+状态机广泛应用于控制系统、协议设计、游戏开发、用户界面交互等领域。
+
+### 有限状态机 Finite State Machine  
+
+有限状态机（FSM）是一种状态机模型，是状态机的一种特例，其中状态的数量是有限的。FSM在计算机科学和工程领域有着广泛的应用，例如编译器、网络协议、控制系统等。  
+
+#### 特点  
+- 有限性：状态和输入的数量是有限的。  
+- 确定性：每个状态对于每个输入都有明确的下一个状态（确定性有限状态机，DFA）或可能有多个下一个状态（非确定性有限状态机，NFA）。  
+- 可图示化：FSM 可以用状态图表示，状态和状态之间的转换用箭头表示。  
+
+#### 应用场景  
+
+FSM 常用于编译器设计、网络协议、游戏逻辑、用户界面状态管理等。  
+
+### 状态模式 State Pattern  
+
+状态模式是一种行为设计模式，它允许对象在其内部状态改变时改变其行为。状态模式将对象的行为封装在状态对象中，通过状态对象来管理对象的行为。状态模式适用于那些对象的行为依赖于其内部状态的情况。  
+
+#### 特点  
+
+- 封装性：每个状态的行为被封装在独立的状态类中。  
+- 动态切换：对象的状态可以在运行时动态切换，改变其行为。  
+- 易于扩展：添加新状态时，只需创建新的状态类，而不需要修改现有代码。  
+
+#### 应用场景  
+
+状态模式常用于复杂组件的状态管理、工作流控制、游戏开发等场景。  
+
+### 三者区别  
+
+|特性    |状态机              |有限状态机            |状态模式             |
+|--------|------------------|---------------------|-------------------|
+|定义	 |抽象的数学模型       |状态机的一种特例       |行为型设计模式        |
+|状态数量 |可以是无限的        |有限                 |不限（取决于实现）     |
+|事件	 |触发状态转换的输入   |触发状态转换的输入      |通过方法调用触发状态行为|
+|状态转换 |由状态和事件定义    |由状态、输入和转换规则定义|通过状态类的实例方法实现|
+|应用场景 |控制系统、协议设计等 |编译器、网络协议等      |复杂组件、工作流控制等  |
+|设计复杂度|可能较高          |较低                  |中等，依赖于状态类的设计|
+
+### 从前端角度理解  
+
+从前端开发的角度来看，状态机和状态模式可以帮助我们更好地管理复杂的用户交互和组件状态。例如，在处理多步骤的表单流程、复杂的组件状态切换、游戏逻辑等场景中，都可以应用状态机和状态模式，使代码更具可维护性和扩展性。  
+
+---  
+
+## 应用与实现  
+
+### 登录流程的状态机实现  
+
+```js:loginStateMachine.js
+// 定义状态基类
+class State {
+    constructor(login) {
+        this.login = login;
+    }
+
+    click() {
+        throw new Error('必须在子类中实现 click 方法');
+    }
+}
+
+// 未登录状态
+class NotLoggedInState extends State {
+    click() {
+        console.log('正在登录...');
+        this.login.setState(this.login.loggingInState);
+
+        // 模拟异步登录请求
+        setTimeout(() => {
+            const success = Math.random() > 0.5; // 随机模拟登录成功或失败
+            if (success) {
+                this.login.setState(this.login.loggedInState);
+            } else {
+                this.login.setState(this.login.loginFailedState);
+            }
+        }, 1000);
+    }
+}
+
+// 正在登录状态
+class LoggingInState extends State {
+    click() {
+        console.log('正在登录，请稍候...');
+    }
+}
+
+// 登录成功状态
+class LoggedInState extends State {
+    click() {
+        console.log('您已登录，无需重复操作。');
+    }
+}
+
+// 登录失败状态
+class LoginFailedState extends State {
+    click() {
+        console.log('登录失败，请重试。');
+        this.login.setState(this.login.notLoggedInState);
+    }
+}
+
+// 上下文类
+class Login {
+    constructor() {
+        this.notLoggedInState = new NotLoggedInState(this);
+        this.loggingInState = new LoggingInState(this);
+        this.loggedInState = new LoggedInState(this);
+        this.loginFailedState = new LoginFailedState(this);
+
+        // 初始状态
+        this.currentState = this.notLoggedInState;
+    }
+
+    setState(state) {
+        this.currentState = state;
+        this.render();
+    }
+
+    click() {
+        this.currentState.click();
+    }
+
+    render() {
+        const stateName = this.currentState.constructor.name;
+        console.log(`当前状态：${stateName}`);
+        // 此处可以更新界面，例如更改按钮文本、显示提示信息等
+    }
+}
+
+// 使用示例
+const login = new Login();
+login.render(); // 输出当前状态
+
+// 用户点击登录按钮
+login.click();
+
+// 模拟用户在2秒后再次点击登录按钮
+setTimeout(() => {
+    login.click();
+}, 2000);
+```  
+
+#### 代码详细分析  
+
+1. 状态基类 (`State`)：  
+
+- 定义了一个通用的状态基类，所有具体状态都将继承自该类。  
+- 包含一个抽象的 `click` 方法，必须在子类中实现。  
+
+2. 具体状态类：  
+
+- `NotLoggedInState`（未登录状态）：  
+    - 用户点击登录按钮时，状态切换到 `LoggingInState`。  
+    - 模拟异步请求，在1秒后随机决定登录成功或失败，并根据结果切换到相应的状态。  
+
+- `LoggingInState`（正在登录状态）：  
+    - 用户再次点击登录按钮时，提示用户正在登录，请稍候。  
+
+- `LoggedInState`（登录成功状态）：  
+    - 用户点击登录按钮时，提示用户已登录。  
+
+- `LoginFailedState`（登录失败状态）：  
+    - 用户点击登录按钮时，提示登录失败，并重置状态为未登录。  
+
+3. 上下文类 (`Login`)：  
+
+- 持有所有的状态实例，并维护当前的状态。  
+- 提供 `setState` 方法来切换状态，并在每次状态切换时调用 `render` 方法更新界面。  
+- `click` 方法调用当前状态的 `click` 方法，实现不同状态下的不同行为。  
+
+---  
+
+### 多标签页组件的状态模式实现  
+
+```js:tabsComponent.js
+// 状态基类
+class TabState {
+    constructor(tabComponent) {
+        this.tabComponent = tabComponent;
+    }
+
+    click() {
+        throw new Error('必须在子类中实现 click 方法');
+    }
+
+    render() {
+        throw new Error('必须在子类中实现 render 方法');
+    }
+}
+
+// 首页标签状态
+class HomeTabState extends TabState {
+    click(tabName) {
+        if (tabName !== 'home') {
+            this.tabComponent.changeState(tabName);
+        }
+    }
+
+    render() {
+        console.log('渲染首页内容');
+        // 此处可以更新界面，显示首页的内容
+    }
+}
+
+// 关于我们标签状态
+class AboutTabState extends TabState {
+    click(tabName) {
+        if (tabName !== 'about') {
+            this.tabComponent.changeState(tabName);
+        }
+    }
+
+    render() {
+        console.log('渲染关于我们内容');
+        // 此处可以更新界面，显示关于我们的内容
+    }
+}
+
+// 联系我们标签状态
+class ContactTabState extends TabState {
+    click(tabName) {
+        if (tabName !== 'contact') {
+            this.tabComponent.changeState(tabName);
+        }
+    }
+
+    render() {
+        console.log('渲染联系我们内容');
+        // 此处可以更新界面，显示联系我们的内容
+    }
+}
+
+// 多标签页组件
+class TabComponent {
+    constructor() {
+        this.states = {
+            home: new HomeTabState(this),
+            about: new AboutTabState(this),
+            contact: new ContactTabState(this),
+        };
+
+        // 初始状态为首页
+        this.currentState = this.states.home;
+        this.currentState.render();
+    }
+
+    changeState(tabName) {
+        this.currentState = this.states[tabName];
+        this.currentState.render();
+    }
+
+    click(tabName) {
+        this.currentState.click(tabName);
+    }
+}
+
+// 使用示例
+const tabComponent = new TabComponent();
+
+// 用户点击“关于我们”标签
+tabComponent.click('about');
+
+// 用户点击“联系我们”标签
+tabComponent.click('contact');
+
+// 用户再次点击“首页”标签
+tabComponent.click('home');
+```  
+
+#### 代码详细分析  
+
+1. 状态基类 (`TabState`)：  
+- 定义了通用的 `click` 和 `render` 方法，具体状态类需要实现这些方法。  
+- 持有对组件实例的引用，以便在需要时修改组件的状态。  
+
+2. 具体状态类（`HomeTabState`、`AboutTabState`、`ContactTabState`）：  
+- `click(tabName)` 方法：  
+    - 检查用户点击的是否是当前标签，如果不是，则调用组件的 `changeState` 方法切换状态。  
+
+- `render()` 方法：  
+    - 渲染对应标签的内容（控制台输出示例，可替换为实际的 DOM 操作）。  
+
+3. 多标签页组件 (`TabComponent`)：
+- 初始化时创建所有状态实例，并设置初始状态为首页。
+
+- `changeState(tabName)` 方法：
+    - 根据标签名称切换当前状态，并调用新的状态的 `render` 方法更新界面。
+
+- `click(tabName)` 方法：
+    - 调用当前状态的 `click` 方法，处理用户的点击事件。
+
+---  
+
+### 购物车结算流程的状态机实现
+```js:cartStateMachine.js
+// 状态基类
+class CheckoutState {
+    constructor(checkoutProcess) {
+        this.checkoutProcess = checkoutProcess;
+    }
+
+    next() {
+        throw new Error('必须在子类中实现 next 方法');
+    }
+
+    prev() {
+        throw new Error('必须在子类中实现 prev 方法');
+    }
+
+    cancel() {
+        console.log('取消订单，返回到商品选择页面。');
+        this.checkoutProcess.changeState('selectProducts');
+    }
+
+    render() {
+        throw new Error('必须在子类中实现 render 方法');
+    }
+}
+
+// 选择商品状态
+class SelectProductsState extends CheckoutState {
+    next() {
+        console.log('商品已选择，进入收货信息填写页面。');
+        this.checkoutProcess.changeState('enterShippingInfo');
+    }
+
+    prev() {
+        console.log('已是第一个步骤，无法回退。');
+    }
+
+    render() {
+        console.log('渲染商品选择页面。');
+        // 展示商品列表，让用户选择商品
+    }
+}
+
+// 填写收货信息状态
+class EnterShippingInfoState extends CheckoutState {
+    next() {
+        console.log('收货信息已填写，进入支付方式选择页面。');
+        this.checkoutProcess.changeState('choosePaymentMethod');
+    }
+
+    prev() {
+        console.log('返回到商品选择页面。');
+        this.checkoutProcess.changeState('selectProducts');
+    }
+
+    render() {
+        console.log('渲染收货信息填写页面。');
+        // 展示收货信息表单
+    }
+}
+
+// 选择支付方式状态
+class ChoosePaymentMethodState extends CheckoutState {
+    next() {
+        console.log('支付方式已选择，进入订单确认页面。');
+        this.checkoutProcess.changeState('confirmOrder');
+    }
+
+    prev() {
+        console.log('返回到收货信息填写页面。');
+        this.checkoutProcess.changeState('enterShippingInfo');
+    }
+
+    render() {
+        console.log('渲染支付方式选择页面。');
+        // 展示支付方式选项
+    }
+}
+
+// 确认订单状态
+class ConfirmOrderState extends CheckoutState {
+    next() {
+        console.log('订单已确认，完成购买。');
+        this.checkoutProcess.changeState('orderComplete');
+    }
+
+    prev() {
+        console.log('返回到支付方式选择页面。');
+        this.checkoutProcess.changeState('choosePaymentMethod');
+    }
+
+    render() {
+        console.log('渲染订单确认页面。');
+        // 展示订单明细，供用户确认
+    }
+}
+
+// 订单完成状态
+class OrderCompleteState extends CheckoutState {
+    next() {
+        console.log('订单已完成，无法继续操作。');
+    }
+
+    prev() {
+        console.log('订单已完成，无法回退。');
+    }
+
+    render() {
+        console.log('渲染订单完成页面。');
+        // 展示购买成功信息
+    }
+}
+
+// 结算流程上下文类
+class CheckoutProcess {
+    constructor() {
+        this.states = {
+            selectProducts: new SelectProductsState(this),
+            enterShippingInfo: new EnterShippingInfoState(this),
+            choosePaymentMethod: new ChoosePaymentMethodState(this),
+            confirmOrder: new ConfirmOrderState(this),
+            orderComplete: new OrderCompleteState(this),
+        };
+
+        // 初始状态为选择商品
+        this.currentState = this.states.selectProducts;
+        this.currentState.render();
+    }
+
+    changeState(stateName) {
+        this.currentState = this.states[stateName];
+        this.currentState.render();
+    }
+
+    next() {
+        this.currentState.next();
+    }
+
+    prev() {
+        this.currentState.prev();
+    }
+
+    cancel() {
+        this.currentState.cancel();
+    }
+}
+
+// 使用示例
+const checkout = new CheckoutProcess();
+
+// 用户选择商品后，进入下一步
+checkout.next();
+
+// 用户填写收货信息后，进入下一步
+checkout.next();
+
+// 用户发现信息有误，选择回退到上一页修改
+checkout.prev();
+
+// 用户修改收货信息后，重新进入下一步
+checkout.next();
+
+// 用户选择支付方式后，进入订单确认
+checkout.next();
+
+// 用户确认订单，完成购买
+checkout.next();
+
+// 尝试在订单完成后再前进或回退
+checkout.next();
+checkout.prev();
+
+// 用户决定取消订单（即使订单已完成）
+checkout.cancel();
+```
+
+#### 代码详细分析  
+
+1. 状态基类 (`CheckoutState`)：  
+
+- 定义了 `next`、`prev`、`cancel` 和 `render` 方法，具体状态类需要实现这些方法。  
+- 持有对结算流程实例的引用，以便在需要时修改流程的状态。  
+
+2. 具体状态类：  
+
+- `SelectProductsState`（选择商品状态）：  
+    - `next()`：进入收货信息填写页面。  
+    - `prev()`：无法回退，已是第一个步骤。  
+- `EnterShippingInfoState`（填写收货信息状态）：  
+    - `next()`：进入支付方式选择页面。  
+    - `prev()`：返回到商品选择页面。  
+- `ChoosePaymentMethodState`（选择支付方式状态）：  
+    - `next()`：进入订单确认页面。  
+    - `prev()`：返回到收货信息填写页面。  
+- `ConfirmOrderState`（确认订单状态）：  
+    - `next()`：完成购买，进入订单完成页面。  
+    - `prev()`：返回到支付方式选择页面。  
+- `OrderCompleteState`（订单完成状态）：  
+    - `next()` 和 `prev()`：订单已完成，无法继续操作或回退。  
+
+3. 结算流程上下文类 (`CheckoutProcess`)：  
+
+- 初始化时创建所有状态实例，并设置初始状态为选择商品。  
+- `changeState(stateName)` 方法：  
+    - 切换当前状态，并调用新的状态的 `render` 方法更新界面。  
+- `next()`、`prev()`、`cancel()` 方法：  
+    - 调用当前状态的相应方法，控制流程的前进、回退和取消。  
